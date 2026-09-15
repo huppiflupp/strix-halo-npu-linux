@@ -30,8 +30,8 @@ model's name.
 | `qwen3.6:latest` | iGPU | Ollama | 23.9 | 28 | Q4_K_M | 256k | vision, tools, thinking |
 | `qwen3.6-en:latest` | iGPU | Ollama | 23.9 | 23 | Q4_K_M | 256k | vision, tools, thinking |
 | `gpt-oss-120b` | iGPU | Lemonade | 59.0 | ? | MXFP4 | 128k | tools |
-| `qwen3.8:latest` | iGPU | Ollama | 17.7 | 19 | Q4_K_M | 256k | vision, tools, thinking |
 | `DeepSeek-V4-Flash (IQ3_...` | iGPU | llama.cpp | 98.0 | ? | UD-IQ3_ | 8k | tools, thinking |
+| `qwen3.8:latest` | iGPU | Ollama | 17.7 | 19 | Q4_K_M | 256k | vision, tools, thinking |
 | `muse-glimmer:latest` | iGPU | Ollama | 18.2 | 17 | Q4_K_M | 128k | vision, tools, thinking |
 | `gemma4:31b` | iGPU | Ollama | 19.9 | 22 | Q4_K_M | 256k | vision, tools, thinking |
 | `gemma4:e2b` | iGPU | Ollama | 7.2 | 2 | Q4_K_M | 128k | vision, tools, thinking |
@@ -54,8 +54,8 @@ model's name.
 | `qwen3.6:latest` | **6/6** | ok | ok | ok | ok | ok | ok | **54.5** | 7 |
 | `qwen3.6-en:latest` | **6/6** | ok | ok | ok | ok | ok | ok | **54.0** | 7 |
 | `gpt-oss-120b` | **6/6** | ok | ok | ok | ok | ok | ok | **49.3** | 15 |
+| `DeepSeek-V4-Flash (IQ3_...` | **6/6** | ok | ok | ok | ok | ok | ok | **24.6** | 2 |
 | `qwen3.8:latest` | **6/6** | ok | ok | ok | ok | ok | ok | **18.2** | 9 |
-| `DeepSeek-V4-Flash (IQ3_...` | **6/6** | ok | ok | ok | ok | ok | ok | **17.9** | 3 |
 | `muse-glimmer:latest` | **6/6** | ok | ok | ok | ok | ok | ok | **11.6** | 11 |
 | `gemma4:31b` | **6/6** | ok | ok | ok | ok | ok | ok | **9.7** | 13 |
 | `gemma4:e2b` | **5/6** | ok | ok | ok | -- | ok | ok | **82.0** | 5 |
@@ -185,31 +185,44 @@ The scripts are not in this repo yet; they are three small Python files that
 talk to Lemonade on `:13311` and Ollama on `:11434` over their OpenAI-compatible
 endpoints. Open an issue if you want them and I will clean them up and add them.
 
-## What we kept
+## What we kept — and what the table talked us out of
 
-Measuring 19 models is not the same as wanting 19 models. After the numbers were
-in, this box went from 18 installed down to 5, freeing **680 GB**. What survived,
-and why:
+Measuring 19 models is not the same as wanting 19. After the numbers were in,
+this box went from 19 installed to **4**, freeing about **830 GB** and taking the
+disk from 86% full to 43%.
 
 | Kept | Why |
 |---|---|
-| `gemma4:e2b` | 82 tok/s — fastest thing here by a wide margin, and 5/6 is plenty for everyday use |
-| `qwen3-vl:30b` | best all-rounder: 6/6, 64.5 tok/s, and the only kept model that reads images well |
-| `Gemma-4-E4B-it-GGUF` | 6/6 at 56.8 tok/s in 5.6 GB, and reliable at tool calls |
-| `gpt-oss-120b` | 6/6 at 49.3 tok/s — the heavy one, and proof that a 120B MoE beats a 31B dense model on this hardware |
-| `DeepSeek-V4-Flash` | 6/6 at 17.9 tok/s, kept as the slow-but-thorough option |
+| `gemma4:e2b` | 82 tok/s — fastest here by a wide margin, and 5/6 is plenty for everyday use |
+| `qwen3-vl:30b` | best all-rounder: 6/6, 64.5 tok/s, and reads images well |
+| `Gemma-4-E4B-it-GGUF` | 6/6 at 56.8 tok/s in 5.6 GB, reliable at tool calls |
+| `gpt-oss-120b` | 6/6 at 49.3 tok/s — the heavy one, and the clearest evidence that a 120B MoE beats a 31B dense model here |
 
-What went, and why: everything scoring 4/6, all three NPU models (5.6x slower
-than the same weights on the iGPU), the unquantized 51.7 GB `gemma4:26b-a4b`
-(worst size-to-speed ratio in the set), and `gemma4:31b` at 9.7 tok/s — a dense
-model that a third of its size in MoE form beats sixfold.
+Everything scoring 4/6 went, as did all three NPU models (5.6x slower than the
+same weights on the iGPU), the unquantized 51.7 GB `gemma4:26b-a4b` (worst
+size-to-speed ratio in the set), and `gemma4:31b` at 9.7 tok/s — a dense model
+beaten sixfold by an MoE a third its size.
 
-One deletion is worth its own line: a 400 GB GLM-5.2 int4 checkpoint, run
-through [colibri](https://github.com/JustVugg/colibri)'s NVMe expert streaming.
-Even with every lever pulled — Vulkan, 4500 pinned experts, O_DIRECT — it topped
-out at **1.29 tok/s**, reading 326 GB from disk for 46 tokens. On a box with
-128 GB of unified memory, streaming a 744B model from NVMe is a demonstration,
-not a workflow.
+### Two deletions the numbers argued for
+
+**DeepSeek-V4-Flash, 108 GB.** 6/6, and with its DSpark draft model 24.6 tok/s
+(17.9 without — speculative decoding bought 37%, not the multiple one might hope
+for). `qwen3.6` scores the same 6/6 at **54.5 tok/s in 24 GB**. The deciding
+figure was not throughput but headroom: with DeepSeek resident, 12 GB of the
+box's 124 remained free; with qwen3.6, 96 GB do. On unified memory a model does
+not just cost disk, it costs everything else you wanted to run beside it.
+
+Worth stating plainly, because it nearly went the other way: the 8k context in
+the table is a **measurement setting, not the model's limit** — it runs at 64k in
+production. Removing a model for a number your own harness produced is an easy
+mistake to make.
+
+**GLM-5.2 int4, 400 GB**, run through
+[colibri](https://github.com/JustVugg/colibri)'s NVMe expert streaming. Even with
+every lever pulled — Vulkan, 4500 pinned experts, O_DIRECT — it topped out at
+**1.29 tok/s**, reading 326 GB from disk per 46 tokens. On a box with 128 GB of
+unified memory, streaming a 744B model from NVMe is a demonstration, not a
+workflow.
 
 **A note if you are deleting on btrfs:** `df` does not update immediately. Right
 after removing 79 GB it still showed the old figure; the space appeared seconds
