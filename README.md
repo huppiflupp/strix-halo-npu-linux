@@ -4,9 +4,40 @@ Notes and a reproducible setup script for getting the AMD Ryzen AI NPU
 (XDNA / amdxdna) working on Nobara Linux, built from
 [amd/xdna-driver](https://github.com/amd/xdna-driver).
 
+> ## Read this first: you may not need any of this
+>
+> **As of kernel 7.2, Nobara ships `amdxdna` in-tree** (`CONFIG_DRM_ACCEL_AMDXDNA=m`),
+> and XRT 2.26.0 talks to it without complaint. Measured on this machine on
+> 2026-09-15, Gemma4-E4B via FastFlowLM, four runs:
+>
+> | driver | decode |
+> |---|---|
+> | self-built DKMS module (2026-08-16) | ~12.0 tok/s |
+> | **kernel's own `amdxdna`** | **12.37 / 12.37 / 12.37 / 12.38 tok/s** |
+>
+> So on a current Nobara/Fedora kernel, check before you build:
+>
+> ```bash
+> grep AMDXDNA /boot/config-$(uname -r)     # CONFIG_DRM_ACCEL_AMDXDNA=m ?
+> modprobe amdxdna && ls /dev/accel/        # accel0 ?
+> ```
+>
+> If both work, install XRT userspace and skip the driver build entirely.
+>
+> **This repo is still what you want if** you are on a kernel that predates the
+> in-tree driver, your distro does not enable it, or you need a newer upstream
+> driver than your kernel carries — `amd/xdna-driver` merged ~70 driver commits
+> in the month after this setup was written, so the in-tree snapshot is not the
+> latest either.
+>
+> One gotcha worth knowing: DKMS *displaces* the kernel's own module (it lands in
+> `extra/`, which modprobe prefers over `kernel/`). `dkms status` showing
+> `installed (Original modules exist)` means the in-tree one is sitting unused in
+> `/var/lib/dkms/xrt-amdxdna/original_module/`. `dkms uninstall` puts it back.
+
 ## Tested on
 
-- Nobara Linux 44 (Fedora 44 base), kernel `7.1.4-200.nobara.fc44.x86_64`
+- Nobara Linux 44 (Fedora 44 base), kernels `7.1.4-200` and `7.2.0-202.nobara.fc44.x86_64`
 - AMD Ryzen AI Max+ 395 "Strix Halo" (NPU PCI id `1022:17f0`, XDNA2)
 - Result: `xrt-smi validate` passes — 51 TOPS (gemm), 56us latency, ~94k op/s throughput
 
