@@ -17,26 +17,51 @@ model's name.
 
 ## The table
 
-| Modell | Rechnet auf | Motor | Datei GB | RAM GB | Quant | Kontext | Punkte | logi | rech | json | anwe | uebe | werk | Tok/s | kalt s | Kann |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `qwen3-vl:30b` | iGPU | Ollama | 19.6 | 45 | Q4_K_M | 256k | **6/6** | ok | ok | ok | ok | ok | ok | **64.5** | 7 | Bild Werkz denkt |
-| `Gemma-4-E4B-it-GGUF` | iGPU | Lemonade | 5.6 | ? | Q4_K_M | 128k | **6/6** | ok | ok | ok | ok | ok | ok | **56.8** | 3 | Bild Werkz |
-| `qwen3.6:latest` | iGPU | Ollama | 23.9 | 28 | Q4_K_M | 256k | **6/6** | ok | ok | ok | ok | ok | ok | **54.5** | 7 | Bild Werkz denkt |
-| `qwen3.6-en:latest` | iGPU | Ollama | 23.9 | 23 | Q4_K_M | 256k | **6/6** | ok | ok | ok | ok | ok | ok | **54.0** | 7 | Bild Werkz denkt |
-| `gpt-oss-120b` | iGPU | Lemonade | 59.0 | ? | MXFP4 | 128k | **6/6** | ok | ok | ok | ok | ok | ok | **49.3** | 15 | Werkz |
-| `qwen3.8:latest` | iGPU | Ollama | 17.7 | 19 | Q4_K_M | 256k | **6/6** | ok | ok | ok | ok | ok | ok | **18.2** | 9 | Bild Werkz denkt |
-| `muse-glimmer:latest` | iGPU | Ollama | 18.2 | 17 | Q4_K_M | 128k | **6/6** | ok | ok | ok | ok | ok | ok | **11.6** | 11 | Bild Werkz denkt |
-| `gemma4:31b` | iGPU | Ollama | 19.9 | 22 | Q4_K_M | 256k | **6/6** | ok | ok | ok | ok | ok | ok | **9.7** | 13 | Bild Werkz denkt |
-| `gemma4:e2b` | iGPU | Ollama | 7.2 | 2 | Q4_K_M | 128k | **5/6** | ok | ok | ok | -- | ok | ok | **82.0** | 5 | Bild Werkz denkt |
-| `DeepSeek-Qwen3-8B-GGUF` | iGPU | Lemonade | 4.9 | ? | Q4_1 | 128k | **5/6** | ok | ok | ok | -- | ok | ok | **40.6** | 6 | Werkz denkt |
-| `qwen3-vl:8b-instruct` | iGPU | Ollama | 6.1 | 44 | Q4_K_M | 256k | **5/6** | ok | ok | ok | -- | ok | ok | **37.3** | 5 | Bild Werkz |
-| `qwen3.5:9b` | iGPU | Ollama | 6.6 | 14 | Q4_K_M | 256k | **5/6** | ok | ok | ok | ab | ok | ok | **31.5** | 5 | Bild Werkz denkt |
-| `gemma4:12b` | iGPU | Ollama | 7.6 | 9 | Q4_K_M | 256k | **5/6** | ok | ok | ok | ab | ok | ok | **23.3** | 6 | Bild Werkz denkt |
-| `gemma4:26b-a4b-it-bf16` | iGPU | Ollama | 51.7 | 52 | F16 | 256k | **5/6** | ok | ok | ok | ab | ok | ok | **21.1** | 15 | Bild Werkz denkt |
-| `qwen3.6-moe-35b-a3b-FLM` | NPU | Lemonade | ? | ? | 35b-a3b | 256k | **5/6** | -- | ok | ok | ok | ok | ok | **10.2** | 17 | Bild Werkz denkt |
-| `NousResearch_Hermes-4-1...` | iGPU | Ollama | 9.0 | 16 | Q4_K_M | 40k | **4/6** | ok | ok | ab | -- | ok | ok | **22.5** | 6 | Werkz denkt |
-| `gpt-oss-20b-FLM` | NPU | Lemonade | ? | ? | 20b | 128k | **4/6** | ok | ok | ok | -- | ok | -- | **16.2** | 16 | denkt |
-| `gemma4-it-e4b-FLM` | NPU | Lemonade | ? | ? | e4b | 128k | **4/6** | -- | ok | ok | -- | ok | ok | **10.1** | 9 | Bild Werkz denkt |
+### What the models are
+
+| Model | Runs on | Engine | File GB | RAM in use GB | Quant | Context | Can |
+|---|---|---|---|---|---|---|---|
+| `qwen3-vl:30b` | iGPU | Ollama | 19.6 | 45 | Q4_K_M | 256k | vision, tools, thinking |
+| `Gemma-4-E4B-it-GGUF` | iGPU | Lemonade | 5.6 | ? | Q4_K_M | 128k | vision, tools |
+| `qwen3.6:latest` | iGPU | Ollama | 23.9 | 28 | Q4_K_M | 256k | vision, tools, thinking |
+| `qwen3.6-en:latest` | iGPU | Ollama | 23.9 | 23 | Q4_K_M | 256k | vision, tools, thinking |
+| `gpt-oss-120b` | iGPU | Lemonade | 59.0 | ? | MXFP4 | 128k | tools |
+| `qwen3.8:latest` | iGPU | Ollama | 17.7 | 19 | Q4_K_M | 256k | vision, tools, thinking |
+| `muse-glimmer:latest` | iGPU | Ollama | 18.2 | 17 | Q4_K_M | 128k | vision, tools, thinking |
+| `gemma4:31b` | iGPU | Ollama | 19.9 | 22 | Q4_K_M | 256k | vision, tools, thinking |
+| `gemma4:e2b` | iGPU | Ollama | 7.2 | 2 | Q4_K_M | 128k | vision, tools, thinking |
+| `DeepSeek-Qwen3-8B-GGUF` | iGPU | Lemonade | 4.9 | ? | Q4_1 | 128k | tools, thinking |
+| `qwen3-vl:8b-instruct` | iGPU | Ollama | 6.1 | 44 | Q4_K_M | 256k | vision, tools |
+| `qwen3.5:9b` | iGPU | Ollama | 6.6 | 14 | Q4_K_M | 256k | vision, tools, thinking |
+| `gemma4:12b` | iGPU | Ollama | 7.6 | 9 | Q4_K_M | 256k | vision, tools, thinking |
+| `gemma4:26b-a4b-it-bf16` | iGPU | Ollama | 51.7 | 52 | F16 | 256k | vision, tools, thinking |
+| `qwen3.6-moe-35b-a3b-FLM` | NPU | Lemonade | ? | ? | 35b-a3b | 256k | vision, tools, thinking |
+| `NousResearch_Hermes-4-1...` | iGPU | Ollama | 9.0 | 16 | Q4_K_M | 40k | tools, thinking |
+| `gpt-oss-20b-FLM` | NPU | Lemonade | ? | ? | 20b | 128k | thinking |
+| `gemma4-it-e4b-FLM` | NPU | Lemonade | ? | ? | e4b | 128k | vision, tools, thinking |
+
+### How they did
+
+| Model | Score | logic | time | json | instruct | translate | tool | tok/s warm | load s |
+|---|---|---|---|---|---|---|---|---|---|
+| `qwen3-vl:30b` | **6/6** | ok | ok | ok | ok | ok | ok | **64.5** | 7 |
+| `Gemma-4-E4B-it-GGUF` | **6/6** | ok | ok | ok | ok | ok | ok | **56.8** | 3 |
+| `qwen3.6:latest` | **6/6** | ok | ok | ok | ok | ok | ok | **54.5** | 7 |
+| `qwen3.6-en:latest` | **6/6** | ok | ok | ok | ok | ok | ok | **54.0** | 7 |
+| `gpt-oss-120b` | **6/6** | ok | ok | ok | ok | ok | ok | **49.3** | 15 |
+| `qwen3.8:latest` | **6/6** | ok | ok | ok | ok | ok | ok | **18.2** | 9 |
+| `muse-glimmer:latest` | **6/6** | ok | ok | ok | ok | ok | ok | **11.6** | 11 |
+| `gemma4:31b` | **6/6** | ok | ok | ok | ok | ok | ok | **9.7** | 13 |
+| `gemma4:e2b` | **5/6** | ok | ok | ok | -- | ok | ok | **82.0** | 5 |
+| `DeepSeek-Qwen3-8B-GGUF` | **5/6** | ok | ok | ok | -- | ok | ok | **40.6** | 6 |
+| `qwen3-vl:8b-instruct` | **5/6** | ok | ok | ok | -- | ok | ok | **37.3** | 5 |
+| `qwen3.5:9b` | **5/6** | ok | ok | ok | ab | ok | ok | **31.5** | 5 |
+| `gemma4:12b` | **5/6** | ok | ok | ok | ab | ok | ok | **23.3** | 6 |
+| `gemma4:26b-a4b-it-bf16` | **5/6** | ok | ok | ok | ab | ok | ok | **21.1** | 15 |
+| `qwen3.6-moe-35b-a3b-FLM` | **5/6** | -- | ok | ok | ok | ok | ok | **10.2** | 17 |
+| `NousResearch_Hermes-4-1...` | **4/6** | ok | ok | ab | -- | ok | ok | **22.5** | 6 |
+| `gpt-oss-20b-FLM` | **4/6** | ok | ok | ok | -- | ok | -- | **16.2** | 16 |
+| `gemma4-it-e4b-FLM` | **4/6** | -- | ok | ok | -- | ok | ok | **10.1** | 9 |
 
 ## What the numbers say
 
@@ -79,7 +104,7 @@ The per-task timings point at a mechanism rather than a quality gap:
 | Task | iGPU | NPU |
 |---|---|---|
 | logic puzzle | passed after **10.5 s** | failed after **1.8 s** |
-| rechnen / json / translate / tool call | passed | passed |
+| time / json / translate / tool call | passed | passed |
 
 On the iGPU the model spends ten seconds on the reasoning problem and gets it
 right. The same file on the NPU answers in under two seconds and gets it wrong
@@ -87,7 +112,7 @@ right. The same file on the NPU answers in under two seconds and gets it wrong
 less text. Everything that is pure transformation still works. This is
 consistent with the reasoning phase being absent or cut short on the
 FastFlowLM path, but we have not proven that; the second failed task
-(`anweisung`) does not fit that explanation, so treat it as an open question
+(`instruct`) does not fit that explanation, so treat it as an open question
 rather than a finding.
 
 **None of this makes the NPU useless.** It is a second compute unit that runs
@@ -113,12 +138,12 @@ Each has a mechanically checkable answer — no judgement calls:
 
 | Task | Checked against |
 |---|---|
-| `logik` | age puzzle, answer must be 12 |
-| `rechnen` | arrival time, must be 17:25 |
+| `logic` | age puzzle, answer must be 12 |
+| `time` | arrival time, must be 17:25 |
 | `json` | valid JSON with exactly three given keys |
-| `anweisung` | "describe a sunset in exactly seven words" — words counted |
-| `uebersetzen` | must be English and contain "Tuesday" |
-| `werkzeug` | does a real function call come back? |
+| `instruct` | "describe a sunset in exactly seven words" — words counted |
+| `translate` | must be English and contain "Tuesday" |
+| `tool` | does a real function call come back? |
 
 Prompts are German, because that is what this machine is used in.
 
@@ -126,13 +151,13 @@ Prompts are German, because that is what this machine is used in.
 
 1. **The ranking is dominated by one task.** Eight of eighteen models score 6/6,
    so the test does not discriminate at the top at all. Almost every failure
-   below that is `anweisung` — counting words. Models see tokens, not words;
+   below that is `instruct` — counting words. Models see tokens, not words;
    this is a known weakness with little bearing on whether a model is useful.
    The failures are all near misses (6 or 8 words instead of 7).
 2. **`ab` means unjudged, not failed.** Four models hit the 2500-token ceiling
    while reasoning and never reached an answer. That is a limit of the harness.
 3. **One anomaly.** `gpt-oss-20b-FLM` returned an empty response with no finish
-   reason on `anweisung`. Counted as a failure for lack of anything better, but
+   reason on `instruct`. Counted as a failure for lack of anything better, but
    it is not a clean one.
 4. **Single run per model.** Speed figures were spot-checked for
    reproducibility — `gpt-oss-120b` measured 49.0 / 48.2 / 49.3 across three
