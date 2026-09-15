@@ -35,6 +35,18 @@ Notes and a reproducible setup script for getting the AMD Ryzen AI NPU
 > `installed (Original modules exist)` means the in-tree one is sitting unused in
 > `/var/lib/dkms/xrt-amdxdna/original_module/`. `dkms uninstall` puts it back.
 
+## Also here: what 18 local models actually do on this box
+
+[**MODELS.md**](MODELS.md) — a rough orientation table for 18 language models
+measured on this machine: throughput, context window, which compute unit they
+actually land on (measured, not assumed), and a small six-task smoke test.
+
+The short version: on unified memory, **bandwidth is the bottleneck, so
+architecture beats parameter count**. A 120B mixture-of-experts runs five times
+faster than a 31B dense model. And the same Gemma 4 weights are **5.6x slower on
+the NPU than on the iGPU** — the NPU earns its place by running *while* the iGPU
+is busy, not by being fast.
+
 ## Tested on
 
 - Nobara Linux 44 (Fedora 44 base), kernels `7.1.4-200` and `7.2.0-202.nobara.fc44.x86_64`
