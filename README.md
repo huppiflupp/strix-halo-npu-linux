@@ -121,6 +121,50 @@ xdna-driver is under active development; a later checkout may behave
 differently. If `setup.sh` fails on a later checkout, compare against the
 upstream `README.md` for what changed.
 
+## Which driver? Three measured, the kernel's own wins
+
+Measured 2026-09-15 on this machine, all three with the same XRT userspace talking
+to them, Gemma4-E4B via FastFlowLM, `decoding_speed_tps` as Lemonade reports it,
+four runs each (all reproduced to ±0.01):
+
+| driver | source | decode | prefill | TTFT |
+|---|---|---|---|---|
+| DKMS build, 2026-08-16 | `amd/xdna-driver` @ `2b71d02` | ~12.0 tok/s | — | — |
+| **kernel's own `amdxdna`** | **Nobara 7.2.0-202, in-tree** | **12.37–12.38 tok/s** | 20.6 tok/s | 1.40 s |
+| DKMS build, 2026-09-15 | `amd/xdna-driver` @ `355bc85e` | 11.81 tok/s | 20.4 tok/s | 1.42 s |
+
+**The kernel's in-tree driver is the fastest of the three**, by about 4.8 % over the
+current upstream build. That was not what I expected. A plausible reading: of the
+~70 driver commits between the August and September builds, the recent ones are
+correctness and cleanup work — MMU notifier ordering, initialising a client fully
+before publishing it, caching euid instead of chasing `filp` changes. Extra checks
+and barriers cost a few percent. Robustness bought with throughput.
+
+**What this table does not tell you:** whether those fixes matter in practice. A
+repaired use-after-free does not show up in tokens per second — it shows up in
+something not crashing occasionally. Nothing here tested that, so if you are hitting
+instability, the newer driver may still be the right call despite being slower.
+
+For a stable setup on a current kernel, the in-tree driver is the easy win: fastest,
+no DKMS, and it survives kernel updates without a rebuild.
+
+```bash
+# back to the kernel's own driver, from a DKMS install
+sudo dkms uninstall xrt-amdxdna/2.26.0 -k $(uname -r)
+sudo modprobe -r amdxdna && sudo modprobe amdxdna
+modinfo amdxdna | grep filename    # should say kernel/drivers/accel/..., not extra/
+```
+
+One trap when rebuilding from upstream: the RPMs carry the same version string as
+whatever you already have (`2.26.0-1` / `2.26.1-1`), so `dnf install` is a no-op and
+you need `dnf reinstall`. And `reinstall` at an identical version runs the old
+package's `dkms remove` without the new package's registration firing — leaving the
+plugin installed but no DKMS module. If `dkms status` comes back empty afterwards:
+
+```bash
+sudo /opt/xilinx/xrt/share/amdxdna/dkms_driver.sh --install
+```
+
 ## Running LLMs on the NPU (Lemonade Server + FastFlowLM)
 
 Once XRT/amdxdna is installed and validated above, [Lemonade
