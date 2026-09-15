@@ -1,0 +1,17 @@
+diff --git a/src/CMake/nativeLnx.cmake b/src/CMake/nativeLnx.cmake
+index dfda0754b..5c223cc04 100644
+--- a/src/CMake/nativeLnx.cmake
++++ b/src/CMake/nativeLnx.cmake
+@@ -46,6 +46,12 @@ execute_process(
+   OUTPUT_STRIP_TRAILING_WHITESPACE
+ )
+ 
++# Nobara is Fedora-based (rpm/dnf) but not recognized by upstream flavor
++# detection; treat it as fedora for packaging purposes.
++if (${LINUX_FLAVOR} MATCHES "^nobara")
++  set(LINUX_FLAVOR "fedora")
++endif()
++
+ if (${LINUX_FLAVOR} MATCHES "^centos")
+   execute_process(
+     COMMAND awk "{print $4}" /etc/redhat-release
