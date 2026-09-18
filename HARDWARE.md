@@ -31,7 +31,8 @@ read back without root.
 | Installed | 128 GB LPDDR5X (*spec*: 8000 MT/s, 256-bit), 125 GiB visible to Linux |
 | VRAM carve-out | 512 MiB (`mem_info_vram_total`), set in firmware, deliberately minimal |
 | GPU-reachable (GTT) | 120 GiB, via `ttm.pages_limit=31457280 ttm.page_pool_size=31457280` |
-| Bandwidth | *spec*: 256 GB/s theoretical (8000 MT/s × 256 bit), shared by CPU, iGPU and NPU. Measured per device: pending. |
+| Bandwidth | *spec*: 256 GB/s theoretical (8000 MT/s × 256 bit), shared by CPU, iGPU and NPU. |
+| Measured (2026-09-18) | **iGPU 226 GB/s** read, ~200 GB/s copy/triad (HIP, 3 × 2 GiB in GTT) = 88 %. **CPU 108 GB/s** STREAM copy/triad, 32 threads = 42 %: the cores sit behind the two CCD links. Measured in the BIOS *Balanced* (85 W) mode. |
 
 The iGPU works almost entirely out of GTT, i.e. ordinary system RAM. Two things
 follow that trip people up:
