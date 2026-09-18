@@ -49,6 +49,9 @@ is busy, not by being fast.
 
 ## Tested on
 
+Full hardware profile of the machine: [**HARDWARE.md**](HARDWARE.md).
+
+
 - Nobara Linux 44 (Fedora 44 base), kernels `7.1.4-200` and `7.2.0-202.nobara.fc44.x86_64`
 - AMD Ryzen AI Max+ 395 "Strix Halo" (NPU PCI id `1022:17f0`, XDNA2)
 - Result: `xrt-smi validate` passes — 51 TOPS (gemm), 56us latency, ~94k op/s throughput
