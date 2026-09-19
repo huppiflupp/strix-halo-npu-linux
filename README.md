@@ -51,6 +51,8 @@ is busy, not by being fast.
 
 Full hardware profile of the machine: [**HARDWARE.md**](HARDWARE.md).
 
+Building AMD's new **HRX** llama.cpp backend on Fedora/Nobara (three pitfalls and the fix): [**HRX.md**](HRX.md).
+
 
 - Nobara Linux 44 (Fedora 44 base), kernels `7.1.4-200` and `7.2.0-202.nobara.fc44.x86_64`
 - AMD Ryzen AI Max+ 395 "Strix Halo" (NPU PCI id `1022:17f0`, XDNA2)
