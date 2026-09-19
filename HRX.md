@@ -53,4 +53,24 @@ Notes:
 
 GMKtec EVO-X2, Ryzen AI Max+ 395, 128 GB, Nobara 44, kernel `7.2.0-202.nobara.fc44`,
 Mesa 26.2.1, distro ROCm 7.1.1. Full profile: [HARDWARE.md](HARDWARE.md).
-Benchmarks of HRX vs Vulkan vs HIP (with perplexity) will be added here and posted to #27219.
+
+## Results (2026-09-19)
+
+Qwen3-30B-A3B-Instruct-2507 Q4_K_M, `-fa 1`; Vulkan/HIP from llama.cpp master `ec92815`.
+Posted to [#27219](https://github.com/ggml-org/llama.cpp/discussions/27219#discussioncomment-18512703).
+
+| | HRX | Vulkan | HIP |
+|---|---|---|---|
+| pp512 | **1724** | 1466 | 1650 |
+| pp1024 / pp2048 (single ubatch, `-ub` = prompt) | 1836 / 1653 | – | – |
+| pp4096 (default `-ub 512`) | fails | 1187 | 1429 |
+| tg128 | 85.3 | **89.5** | 72.9 |
+| tg128 after 8k context | fails | 65.4 | 55.9 |
+| perplexity (wikitext-2, 20 chunks) | fails | 6.4075 | 6.4061 |
+
+- HRX is correct: greedy output over 96 tokens is identical to Vulkan/HIP on 2 of 3 prompts; the third
+  diverges where HIP also does (normal floating-point ordering).
+- Short prompts are fastest on HRX (+18 % vs Vulkan, +4 % vs HIP); for generation Vulkan still wins.
+- In this RFC snapshot only the first ubatch works: anything that attends to an existing KV cache
+  (second ubatch, `-d`, multi-turn chat) fails with `res = -3`. `llama-perplexity` fails on a
+  `GET_ROWS` with an empty index tensor. Not usable for multi-turn chat yet.
