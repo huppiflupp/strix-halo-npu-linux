@@ -63,10 +63,10 @@ Posted to [#27219](https://github.com/ggml-org/llama.cpp/discussions/27219#discu
 |---|---|---|---|
 | pp512 | **1724** | 1466 | 1650 |
 | pp1024 / pp2048 (single ubatch, `-ub` = prompt) | 1836 / 1653 | – | – |
-| pp4096 (default `-ub 512`) | fails | 1187 | 1429 |
+| pp4096 (default `-ub 512`) | fails → **1308** with fixes | 1187 | 1429 |
 | tg128 | 85.3 | **89.5** | 72.9 |
-| tg128 after 8k context | fails | 65.4 | 55.9 |
-| perplexity (wikitext-2, 20 chunks) | fails | 6.4075 | 6.4061 |
+| tg128 after 8k context | fails → **39.8** with fixes | 65.4 | 55.9 |
+| perplexity (wikitext-2, 20 chunks) | fails → **6.4170** with fixes | 6.4075 | 6.4061 |
 
 - HRX is correct: greedy output over 96 tokens is identical to Vulkan/HIP on 2 of 3 prompts; the third
   diverges where HIP also does (normal floating-point ordering).
@@ -74,3 +74,23 @@ Posted to [#27219](https://github.com/ggml-org/llama.cpp/discussions/27219#discu
 - In this RFC snapshot only the first ubatch works: anything that attends to an existing KV cache
   (second ubatch, `-d`, multi-turn chat) fails with `res = -3`. `llama-perplexity` fails on a
   `GET_ROWS` with an empty index tensor. Not usable for multi-turn chat yet.
+
+### Fixes (2026-09-19)
+
+Three small patches on top of the RFC branch make HRX usable beyond one ubatch. They are
+on top of `users/stella/hrx-rfc-v1` (touching only `ggml/src/ggml-hrx`) and will be offered upstream
+in [#27219](https://github.com/ggml-org/llama.cpp/discussions/27219):
+
+1. **Empty output nodes** (`llama-perplexity`): a `GET_ROWS` with an empty index rejected the whole graph.
+   Nodes with a zero-element output are now skipped.
+2. **Prompts longer than one ubatch**: the flash-attention matcher rejected the mask of a
+   later ubatch (width = cached prefix + ubatch). A ubatch without outputs also left
+   zero-byte graph inputs that failed to bind.
+3. **Decode past 2048 tokens**: the fused decode kernel stops at 2048 KV tokens. AMD's
+   corpus already has unregistered long-context kernels (`produce_partials` + `reduce_f32`,
+   up to 32768). They are now registered, followed by the existing Q8_1 pack.
+
+Checks: PPL at `-ub 512` (four ubatches per chunk) equals the single-ubatch value (6.4170). Greedy
+output on a 7163-token prompt is identical to Vulkan over all 128 tokens. At 2722 tokens it diverges
+at a near-tie (Vulkan: *culture* −0.859 vs *thought* −0.876 logprob). The long-context
+decode path is correct but untuned (39.8 vs Vulkan 65.4 t/s at 8k).
