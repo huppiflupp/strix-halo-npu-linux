@@ -65,7 +65,7 @@ Posted to [#27219](https://github.com/ggml-org/llama.cpp/discussions/27219#discu
 | pp1024 / pp2048 (single ubatch, `-ub` = prompt) | 1836 / 1653 | – | – |
 | pp4096 (default `-ub 512`) | fails → **1308** with fixes | 1187 | 1429 |
 | tg128 | 85.3 | **89.5** | 72.9 |
-| tg128 after 8k context | fails → **39.8** with fixes | 65.4 | 55.9 |
+| tg128 after 8k context | fails → **57.1** with fixes | 65.4 | 55.9 |
 | perplexity (wikitext-2, 20 chunks) | fails → **6.4170** with fixes | 6.4075 | 6.4061 |
 
 - HRX is correct: greedy output over 96 tokens is identical to Vulkan/HIP on 2 of 3 prompts; the third
@@ -77,7 +77,7 @@ Posted to [#27219](https://github.com/ggml-org/llama.cpp/discussions/27219#discu
 
 ### Fixes (2026-09-19)
 
-Three small patches on top of the RFC branch make HRX usable beyond one ubatch. They are
+Four small patches on top of the RFC branch make HRX usable beyond one ubatch. They are
 on top of `users/stella/hrx-rfc-v1` (touching only `ggml/src/ggml-hrx`) and will be offered upstream
 in [#27219](https://github.com/ggml-org/llama.cpp/discussions/27219):
 
@@ -89,8 +89,20 @@ in [#27219](https://github.com/ggml-org/llama.cpp/discussions/27219):
 3. **Decode past 2048 tokens**: the fused decode kernel stops at 2048 KV tokens. AMD's
    corpus already has unregistered long-context kernels (`produce_partials` + `reduce_f32`,
    up to 32768). They are now registered, followed by the existing Q8_1 pack.
+4. **Long-context decode speed**: the decode grid issued all blocks of one KV head before the next.
+   So every KV row (4 heads × 256 B) was fetched in four passes, which no longer fit the 32 MB MALL at
+   8k context. Swapping the grid order cut the producer from 250 to 97.5 µs per layer
+   (tg @ 8k: 39.8 → 57.1 t/s; @ 4k: 59.5 → 66.9, Vulkan 74.6).
 
 Checks: PPL at `-ub 512` (four ubatches per chunk) equals the single-ubatch value (6.4170). Greedy
 output on a 7163-token prompt is identical to Vulkan over all 128 tokens. At 2722 tokens it diverges
-at a near-tie (Vulkan: *culture* −0.859 vs *thought* −0.876 logprob). The long-context
-decode path is correct but untuned (39.8 vs Vulkan 65.4 t/s at 8k).
+at a near-tie (Vulkan: *culture* −0.859 vs *thought* −0.876 logprob). Vulkan is still
+ahead at long context (65.4 vs 57.1 t/s at 8k), because HRX runs attention as three dispatches.
+
+**Per-kernel timing:** `HRX_PROFILE_MODE=dispatch HRX_PROFILE_FILE=x.ireeprof` plus
+`iree-profile executable x.ireeprof` (build target `iree-profile` in the HRX deps build). At
+`hrx-system@8ef82dbf` this records no dispatches for graph launches until `graph_exec.c` sets
+`IREE_HAL_COMMAND_BUFFER_MODE_RETAIN_PROFILE_METADATA` while profiling (one-line patch). Note:
+the HRX sub-build is not rebuilt by the llama.cpp targets. Run `ninja` in
+`build/ggml/src/ggml-hrx/hrx/src/ggml-hrx-deps-build`. After editing a `.loom` kernel, also
+update its sha256 in `manifest.json`, or the corpus step fails and the old kernel stays embedded.
